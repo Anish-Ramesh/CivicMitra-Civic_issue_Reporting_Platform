@@ -43,7 +43,7 @@ const getCoordinates = (location) => {
   }
   
   // Debug log the location object
-  console.log('Processing location object:', JSON.stringify(location, null, 2));
+  // console.log('Processing location object:', JSON.stringify(location, null, 2));
   
   // Format 1: Direct lat/lng properties
   if (typeof location.lat === 'number' && typeof location.lng === 'number') {
@@ -53,9 +53,6 @@ const getCoordinates = (location) => {
   
   // Format 2: String lat/lng
   if (location.lat !== undefined && location.lng !== undefined) {
-    console.log('Using string lat/lng properties');
-    const lat = parseFloat(location.lat);
-    const lng = parseFloat(location.lng);
     if (!isNaN(lat) && !isNaN(lng)) {
       return [lat, lng];
     }
@@ -103,12 +100,13 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
   const [error, setError] = useState(null);
 
   // Debug: Log component props and state
-  console.log('ComplaintsMap render', { 
-    complaintsCount: complaints?.length,
-    isMounted,
-    initialized,
-    error
-  });
+  // Debug: Log component props and state
+  // console.log('ComplaintsMap render', { 
+  //   complaintsCount: complaints?.length,
+  //   isMounted,
+  //   initialized,
+  //   error
+  // });
 
   // Initialize map
   useEffect(() => {
@@ -126,12 +124,13 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
         return;
       }
       
-      console.log('Initializing map...');
-      console.log('Container dimensions:', {
-        width: mapRef.current.offsetWidth,
-        height: mapRef.current.offsetHeight,
-        style: window.getComputedStyle(mapRef.current)
-      });
+      
+      // console.log('Initializing map...');
+      // console.log('Container dimensions:', {
+      //   width: mapRef.current.offsetWidth,
+      //   height: mapRef.current.offsetHeight,
+      //   style: window.getComputedStyle(mapRef.current)
+      // });
       
       try {
         // Initialize the map with a default view of India
@@ -156,7 +155,7 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
           noWrap: true
         }).addTo(mapInstance.current);
         
-        console.log('Tile layer added:', tileLayer);
+        // console.log('Tile layer added:', tileLayer);
         
         // Mark as mounted and initialized
         setIsMounted(true);
@@ -175,14 +174,15 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
         console.log('Map initialized successfully');
         
         // Debug: Log map container after initialization
-        setTimeout(() => {
-          console.log('Map container after init:', {
-            container: mapRef.current,
-            map: mapInstance.current,
-            size: mapInstance.current?.getSize(),
-            bounds: mapInstance.current?.getBounds()
-          });
-        }, 200);
+        // Debug: Log map container after initialization
+        // setTimeout(() => {
+        //   console.log('Map container after init:', {
+        //     container: mapRef.current,
+        //     map: mapInstance.current,
+        //     size: mapInstance.current?.getSize(),
+        //     bounds: mapInstance.current?.getBounds()
+        //   });
+        // }, 200);
         
       } catch (err) {
         console.error('Error initializing map:', err);
@@ -229,7 +229,10 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
       return;
     }
     
-    console.log('Updating markers...');
+    
+    // console.log('Updating markers...');
+    
+    // Clear existing markers
     
     // Clear existing markers
     Object.entries(markersRef.current).forEach(([id, marker]) => {
@@ -252,14 +255,14 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
       }
       
       try {
-        console.log('Complaint location data:', {
-          id: complaint.id,
-          location: complaint.location,
-          hasLatLng: complaint.location.lat !== undefined && complaint.location.lng !== undefined,
-          hasCoordinates: complaint.location.coordinates !== undefined
-        });
+        // console.log('Complaint location data:', {
+        //   id: complaint.id,
+        //   location: complaint.location,
+        //   hasLatLng: complaint.location.lat !== undefined && complaint.location.lng !== undefined,
+        //   hasCoordinates: complaint.location.coordinates !== undefined
+        // });
         const coords = getCoordinates(complaint.location);
-        console.log('Extracted coordinates:', coords);
+        // console.log('Extracted coordinates:', coords);
         if (!coords || !Array.isArray(coords) || coords.length !== 2) {
           console.log('Invalid coordinates for complaint:', complaint.id, coords);
           return;
@@ -370,14 +373,15 @@ const ComplaintsMap = ({ complaints = [], onMarkerClick, className = 'h-96' }) =
   }, []);
 
   // Debug info
-  console.log('Map render state:', {
-    isMounted,
-    initialized,
-    error,
-    complaintsCount: complaints?.length,
-    mapRef: mapRef.current ? 'Exists' : 'Null',
-    mapInstance: mapInstance.current ? 'Exists' : 'Null'
-  });
+  // Debug info
+  // console.log('Map render state:', {
+  //   isMounted,
+  //   initialized,
+  //   error,
+  //   complaintsCount: complaints?.length,
+  //   mapRef: mapRef.current ? 'Exists' : 'Null',
+  //   mapInstance: mapInstance.current ? 'Exists' : 'Null'
+  // });
 
   return (
     <div className={`w-full rounded-lg overflow-hidden shadow-md border border-gray-200 bg-gray-50 ${className}`}>

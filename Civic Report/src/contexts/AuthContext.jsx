@@ -31,10 +31,10 @@ export function AuthProvider({ children }) {
 
     try {
       const officialStatus = await isOfficial(user.uid);
-      console.log('[AuthContext] User role check:', {
-        uid: user.uid,
-        isOfficial: officialStatus
-      });
+      // console.log('[AuthContext] User role check:', {
+      //   uid: user.uid,
+      //   isOfficial: officialStatus
+      // });
       setIsOfficialUser(officialStatus);
       return officialStatus;
     } catch (error) {
@@ -51,10 +51,13 @@ export function AuthProvider({ children }) {
     const handleAuthStateChanged = async (user) => {
       if (!isMounted) return;
       
-      console.log('[AuthContext] Auth state changed:', { 
-        uid: user?.uid,
-        email: user?.email
-      });
+      
+      // console.log('[AuthContext] Auth state changed:', { 
+      //   uid: user?.uid,
+      //   email: user?.email
+      // });
+      
+      // Update current user state
       
       // Update current user state
       setCurrentUser(user);

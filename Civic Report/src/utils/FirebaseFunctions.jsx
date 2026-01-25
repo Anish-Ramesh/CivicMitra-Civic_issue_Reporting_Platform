@@ -65,7 +65,7 @@ const handleRegistration = async (formData) => {
 
 const isOfficial = async (userId) => {
   try {
-    console.log('[isOfficial] Checking if user is official:', { userId });
+    // console.log('[isOfficial] Checking if user is official:', { userId });
 
     if (!userId) {
       console.log('[isOfficial] No user ID provided');
@@ -433,7 +433,7 @@ const findComplaintAuthor = async (uid) => {
 };
 
 const fetchComplaints = (handleComplaintsUpdate, userRole = 'citizen') => {
-  console.log('[fetchComplaints] Starting with role:', userRole);
+  // console.log('[fetchComplaints] Starting with role:', userRole);
   const complaintsCollection = collection(db, "complaints");
   const updatedComplaints = [];
 
@@ -455,9 +455,9 @@ const fetchComplaints = (handleComplaintsUpdate, userRole = 'citizen') => {
     );
   }
 
-  console.log('[fetchComplaints] Setting up snapshot listener with query:', complaintsQuery);
+  // console.log('[fetchComplaints] Setting up snapshot listener with query:', complaintsQuery);
   const unsubscribe = onSnapshot(complaintsQuery, async (complaintsSnapshot) => {
-    console.log(`[fetchComplaints] Received snapshot with ${complaintsSnapshot.size} complaints`);
+    // console.log(`[fetchComplaints] Received snapshot with ${complaintsSnapshot.size} complaints`);
     updatedComplaints.length = 0; // Clear the array while keeping the reference
 
     // Process all complaints
@@ -492,7 +492,7 @@ const fetchComplaints = (handleComplaintsUpdate, userRole = 'citizen') => {
             if (complaintIndex !== -1) {
               updatedComplaints[complaintIndex].comments = comments;
               if (typeof handleComplaintsUpdate === 'function') {
-                console.log(`[fetchComplaints] Sending ${updatedComplaints.length} complaints to handler`);
+                // console.log(`[fetchComplaints] Sending ${updatedComplaints.length} complaints to handler`);
                 handleComplaintsUpdate([...updatedComplaints]);
               }
             }
@@ -508,7 +508,7 @@ const fetchComplaints = (handleComplaintsUpdate, userRole = 'citizen') => {
 
       // Initial update after processing all complaints
       if (typeof handleComplaintsUpdate === 'function') {
-        console.log(`[fetchComplaints] Sending ${updatedComplaints.length} complaints to handler`);
+        // console.log(`[fetchComplaints] Sending ${updatedComplaints.length} complaints to handler`);
         handleComplaintsUpdate([...updatedComplaints]);
       }
     };
