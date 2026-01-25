@@ -13,7 +13,7 @@
 ## 📖 Overview
 
 **Civic Mitra** is a cutting-edge, cross-platform mobile and web application designed to empower citizens to report civic issues (like potholes, garbage dumps, broken streetlights) directly to authorities. 
-
+        
 What sets Civic Mitra apart is its **Blockchain-based Complaint Registry**, ensuring that every report is immutable, transparent, and verifiable. Combined with **AI-powered analysis** and **Real-time Geo-tagging**, it bridges the gap between citizens and local governance.
 
 ---
