@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 import MuiTextField from "@mui/material/TextField";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleRegistration } from "../utils/FirebaseFunctions.jsx";
+import { handleRegistration } from "../utils/FirebaseServices.jsx";
 
 export const TextField = styled(MuiTextField)((props) => ({
   width: "100%",

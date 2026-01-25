@@ -156,9 +156,9 @@ const uploadToFirebaseStorage = async (file, path = 'audio/') => {
 };
 
 const uploadToCloudinary = async (file, folder, resourceType = 'auto') => {
-  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dr3puskd8';
-  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'civic_mitra_unsigned';
-  const API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY || '383239151459235';
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
 
   if (!CLOUD_NAME || !UPLOAD_PRESET || !API_KEY) {
     throw new Error("Cloudinary configuration is missing. Please check your environment variables.");
@@ -168,18 +168,10 @@ const uploadToCloudinary = async (file, folder, resourceType = 'auto') => {
   uploadData.append('file', file);
   uploadData.append('upload_preset', UPLOAD_PRESET);
   uploadData.append('folder', folder);
+  // public_id is optional but good for organizing
   uploadData.append('public_id', `${folder}_${Date.now()}`);
   uploadData.append('api_key', API_KEY);
   uploadData.append('resource_type', resourceType);
-
-  console.log(`Uploading ${file.type} to Cloudinary:`, {
-    cloudName: CLOUD_NAME,
-    uploadPreset: UPLOAD_PRESET,
-    file: file.name,
-    size: file.size,
-    type: file.type,
-    resourceType
-  });
 
   try {
     const response = await fetch(
@@ -189,27 +181,22 @@ const uploadToCloudinary = async (file, folder, resourceType = 'auto') => {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Cloudinary upload error:', errorData);
       let errorMessage = `Failed to upload ${file.type.startsWith('audio/') ? 'audio' : 'file'}`;
       try {
         const errorJson = JSON.parse(errorData);
         errorMessage = errorJson.error?.message || errorMessage;
       } catch (e) {
-        console.error('Error parsing error response:', e);
+        console.error('Error parsing Cloudinary error:', e);
       }
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    console.log('Cloudinary upload successful:', {
-      url: data.secure_url,
-      type: data.resource_type,
-      format: data.format
-    });
+    console.log('Cloudinary upload successful');
     return data.secure_url;
   } catch (error) {
     console.error(`Error during ${file.type} upload:`, error);
-    throw new Error(`Failed to upload ${file.type.startsWith('audio/') ? 'audio' : 'file'}: ${error.message}`);
+    throw error;
   }
 };
 
@@ -228,7 +215,6 @@ const createComplaint = async (formData, audioBlob = null) => {
         audioUrl = audioUpload.url;
       } catch (error) {
         console.error('Error uploading audio:', error);
-        // Don't fail the whole complaint if audio upload fails
       }
     }
 
@@ -242,7 +228,6 @@ const createComplaint = async (formData, audioBlob = null) => {
         );
       } catch (error) {
         console.error('Error uploading legacy media:', error);
-        // Continue with complaint creation even if media upload fails
       }
     }
 
@@ -254,7 +239,6 @@ const createComplaint = async (formData, audioBlob = null) => {
           if (url) photoUrls.push(url);
         } catch (err) {
           console.error('Error uploading a photo:', err);
-          // continue with others
         }
       }
     }
@@ -280,7 +264,6 @@ const createComplaint = async (formData, audioBlob = null) => {
         audioUrl = await uploadToCloudinary(audioFile, 'complaints/audio', 'video');
       } catch (error) {
         console.error('Error uploading audio:', error);
-        // Continue with complaint creation even if audio upload fails
       }
     }
 
@@ -432,6 +415,22 @@ const findComplaintAuthor = async (uid) => {
   }
 };
 
+// One-time fetch of all complaints for analytics
+export const fetchAllComplaintsForAnalytics = async () => {
+  try {
+    const q = query(collection(db, "complaints"));
+    const snapshot = await getDocs(q);
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching all complaints:", error);
+    return [];
+  }
+};
+
 const fetchComplaints = (handleComplaintsUpdate, userRole = 'citizen') => {
   // console.log('[fetchComplaints] Starting with role:', userRole);
   const complaintsCollection = collection(db, "complaints");
@@ -443,7 +442,8 @@ const fetchComplaints = (handleComplaintsUpdate, userRole = 'citizen') => {
     // For officials, show all complaints except those reported by the official themselves
     complaintsQuery = query(
       complaintsCollection,
-      where("status", "in", ["pending", "inProgress", "solved", "rejected"])
+      // Query for all valid statuses
+      where("status", "in", [Statuses.pending, Statuses.inProgress, Statuses.solved, Statuses.rejected])
     );
   } else {
     // For citizens, only show their own complaints

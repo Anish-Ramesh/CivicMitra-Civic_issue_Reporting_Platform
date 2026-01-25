@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { format, subDays, startOfDay, eachDayOfInterval, isWithinInterval } from 'date-fns';
 import { Statuses, statusColors } from '../utils/enums';
-import { fetchComplaints, subscribeToComplaints } from '../utils/FirebaseFunctions';
+import { fetchAllComplaintsForAnalytics, subscribeToComplaints } from '../utils/FirebaseServices';
 import { saveAs } from 'file-saver';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -183,7 +183,8 @@ const AnalyticsDashboard = () => {
         setError(null);
         
         console.log('Fetching complaints...');
-        const allComplaints = await fetchComplaints();
+        const result = await fetchAllComplaintsForAnalytics();
+        const allComplaints = Array.isArray(result) ? result : [];
         
         if (!isMounted) return;
         

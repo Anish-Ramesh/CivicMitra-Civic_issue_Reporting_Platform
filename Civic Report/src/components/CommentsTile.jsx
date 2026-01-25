@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User } from "lucide-react";
-import { fetchUserById } from "../utils/FirebaseFunctions.jsx";
+import { fetchUserById } from "../utils/FirebaseServices.jsx";
 
 const CommentsTile = ({ comment }) => {
   const [commentAuthor, setCommentAuthor] = useState(null);

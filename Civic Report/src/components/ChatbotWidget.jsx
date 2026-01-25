@@ -58,6 +58,51 @@ const ChatbotWidget = () => {
     }
   };
 
+  async function callGeminiAPI(allMessages) {
+    const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!API_KEY) throw new Error("Gemini API Key missing");
+
+    const contents = allMessages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+    
+    // Prepend system instruction as the first user message or use systemInstruction property (v1beta)
+    // For safety/compatibility, we'll embed system prompt in the first user message or separate prompt
+    // Gemini Pro simplified: just send messages. We'll prepend system prompt to first user message.
+    if (contents.length > 0 && contents[0].role === 'user') {
+      contents[0].parts[0].text = SYSTEM_PROMPT + "\n\n" + contents[0].parts[0].text;
+    } else {
+      contents.unshift({ role: 'user', parts: [{ text: SYSTEM_PROMPT }]});
+    }
+
+    try {
+      // Using user-requested model
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contents })
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`Gemini API error ${res.status}: ${t}`);
+      }
+      
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!text) throw new Error("No response content from Gemini");
+      
+      return text;
+    } catch (error) {
+       console.error('Error in callGeminiAPI:', error);
+       throw error;
+    }
+  }
+
   async function callDirectAPI(allMessages, targetLanguage) {
     // Check if the last message is an analytics query
     const lastMessage = allMessages[allMessages.length - 1]?.content;
@@ -69,70 +114,83 @@ const ChatbotWidget = () => {
       return response;
     }
     
-    // Otherwise, proceed with the normal API call
-    const payloadMessages = [
-      { 
-        role: 'system', 
-        content: SYSTEM_PROMPT + 
-          `\n\nCurrent date: ${new Date().toLocaleDateString()}` +
-          `\nRespond in language code: ${targetLanguage || 'en'}.`
-      },
-      ...allMessages.map(m => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: m.role === 'assistant' && m.content.includes('[ANALYTICS]') 
-          ? 'I have access to analytics data. You can ask me about complaint statistics, status distribution, or trends.'
-          : m.content
-      }))
-    ];
-    
-    // Add analytics context if relevant to the conversation
-    const conversationContext = allMessages.map(m => m.content).join(' ').toLowerCase();
-    if (isAnalyticsQuery(conversationContext)) {
-      try {
-        const analyticsData = await getAnalyticsData();
-        payloadMessages[0].content += `\n\n[ANALYTICS CONTEXT]\n${formatAnalyticsSummary(analyticsData)}`;
-      } catch (error) {
-        console.error('Error adding analytics context:', error);
-      }
+    // Otherwise, try Azure/GitHub Models first if configured
+    if (DIRECT_PAT) {
+        const payloadMessages = [
+        { 
+            role: 'system', 
+            content: SYSTEM_PROMPT + 
+            `\n\nCurrent date: ${new Date().toLocaleDateString()}` +
+            `\nRespond in language code: ${targetLanguage || 'en'}.`
+        },
+        ...allMessages.map(m => ({
+            role: m.role === 'assistant' ? 'assistant' : 'user',
+            content: m.role === 'assistant' && m.content.includes('[ANALYTICS]') 
+            ? 'I have access to analytics data. You can ask me about complaint statistics, status distribution, or trends.'
+            : m.content
+        }))
+        ];
+        
+        // Add analytics context if relevant
+        const conversationContext = allMessages.map(m => m.content).join(' ').toLowerCase();
+        if (isAnalyticsQuery(conversationContext)) {
+            try {
+                const analyticsData = await getAnalyticsData();
+                payloadMessages[0].content += `\n\n[ANALYTICS CONTEXT]\n${formatAnalyticsSummary(analyticsData)}`;
+            } catch (error) {
+                console.error('Error adding analytics context:', error);
+            }
+        }
+
+        try {
+            const res = await fetch(DIRECT_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                'Authorization': `Bearer ${DIRECT_PAT}`,
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                model: DIRECT_MODEL, 
+                messages: payloadMessages,
+                temperature: 0.7,
+                max_tokens: 500
+                })
+            });
+            
+            if (!res.ok) {
+                throw new Error(`Azure API error ${res.status}`);
+            }
+            
+            const data = await res.json();
+            let content = data?.choices?.[0]?.message?.content;
+            return content || "No response.";
+        } catch (error) {
+            console.warn('Azure API failed, falling back to Gemini:', error);
+            // Fallthrough to Gemini
+        }
     }
 
+    // Fallback: Gemini API
     try {
-      const res = await fetch(DIRECT_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${DIRECT_PAT}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          model: DIRECT_MODEL, 
-          messages: payloadMessages,
-          temperature: 0.7,
-          max_tokens: 500
-        })
-      });
-      
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`Direct API error ${res.status}: ${t}`);
-      }
-      
-      const data = await res.json();
-      let content = data?.choices?.[0]?.message?.content;
-      
-      if (!content) {
-        if (Array.isArray(content)) {
-          content = content.map(p => (typeof p === 'string' ? p : p?.text || '')).join('');
-        } else if (data?.choices?.[0]?.message?.content?.text) {
-          content = data.choices[0].message.content.text;
-        } else {
-          content = JSON.stringify(data);
+        // Inject Analytics context into messages for Gemini as well
+        const messagesWithContext = [...allMessages];
+        const lastMsg = messagesWithContext[messagesWithContext.length - 1];
+        
+        // Simple context injection for Gemini
+        const conversationContext = allMessages.map(m => m.content).join(' ').toLowerCase();
+        if (isAnalyticsQuery(conversationContext)) {
+             try {
+                const analyticsData = await getAnalyticsData();
+                lastMsg.content += `\n\n[ANALYTICS DATA]\n${formatAnalyticsSummary(analyticsData)}`;
+            } catch (error) {
+                console.error('Error adding analytics context for Gemini:', error);
+            }
         }
-      }
-      
-      return content;
-    } catch (error) {
-      console.error('Error in callDirectAPI:', error);
-      throw error;
+
+        return await callGeminiAPI(messagesWithContext);
+    } catch (geminiError) {
+        console.error('Gemini API also failed:', geminiError);
+        throw new Error("All AI services failed. Please check your configuration.");
     }
   }
 

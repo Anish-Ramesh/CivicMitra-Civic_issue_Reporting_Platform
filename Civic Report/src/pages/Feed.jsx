@@ -14,7 +14,7 @@ import {
   reportComplaint,
   hasUserReported,
   unreportComplaint,
-} from "../utils/FirebaseFunctions.jsx";
+} from "../utils/FirebaseServices.jsx";
 import { Statuses, statusColors } from "../utils/enums";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../utils/Firebase";
@@ -346,12 +346,49 @@ const FeedCard = ({ item, currentUid, following, onFollow, onUnfollow, onLocalLi
           </div>
         )}
         
-        {/* Image/Video */}
-        {item.mediaPath && (
-          <div className="bg-gray-50">
-            <img src={item.mediaPath} alt="attachment" className="w-full max-h-[28rem] object-cover" />
+        {/* Media Content */}
+        {/* Video */}
+        {(item.videoPath || (item.mediaPath && item.mediaPath.match(/\.(mp4|webm|mov)$/i))) && (
+          <div className="mt-3 bg-black rounded-lg overflow-hidden">
+            <video 
+              src={item.videoPath || item.mediaPath} 
+              controls 
+              className="w-full max-h-[32rem]"
+              preload="metadata"
+            />
           </div>
         )}
+
+        {/* Photos */}
+        {(() => {
+          // Collect all images
+          let images = [];
+          if (Array.isArray(item.mediaPaths) && item.mediaPaths.length > 0) {
+            images = item.mediaPaths;
+          } else if (item.mediaPath && !item.mediaPath.match(/\.(mp4|webm|mov)$/i)) {
+            images = [item.mediaPath];
+          } else if (item.imageUrl) {
+            images = [item.imageUrl];
+          }
+
+          if (images.length === 0) return null;
+
+          return (
+            <div className={`mt-3 grid gap-1 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {images.map((url, idx) => (
+                <div key={idx} className={`relative ${images.length === 3 && idx === 0 ? 'col-span-2' : ''}`}>
+                  <img 
+                    src={url} 
+                    alt={`attachment-${idx}`} 
+                    className="w-full h-64 object-cover rounded-lg border border-gray-100"
+                    loading="lazy"
+                    onClick={() => window.open(url, '_blank')}
+                  />
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Actions */}
@@ -453,6 +490,14 @@ const FeedCard = ({ item, currentUid, following, onFollow, onUnfollow, onLocalLi
           </form>
         </div>
       )}
+      <div className="px-4 pb-2 text-xs text-gray-400 font-mono bg-gray-50 border-t border-gray-100 p-2 overflow-auto max-h-32 hidden">
+        DEBUG: 
+        status: {item.status},
+        authorId: {item.authorId},
+        mediaPaths: {JSON.stringify(item.mediaPaths)},
+        mediaPath: {JSON.stringify(item.mediaPath)},
+        videoPath: {JSON.stringify(item.videoPath)}
+      </div>
     </article>
   );
 };
@@ -501,7 +546,11 @@ const Feed = () => {
     }
     arr = arr.filter((i) => (i.reportCount || 0) < 30 || i.authorId === user?.uid);
     if (sortBy === "old") {
-      arr = [...arr].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+      arr = [...arr].sort((a, b) => {
+        const tA = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp || 0;
+        const tB = typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp || 0;
+        return tA - tB;
+      });
     } else if (sortBy === "trending") {
       arr = [...arr].sort((a, b) => {
         const ta = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp || 0;
@@ -513,7 +562,12 @@ const Feed = () => {
         return sb - sa;
       });
     } else {
-      arr = [...arr].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      // Default: Newest
+      arr = [...arr].sort((a, b) => {
+        const tA = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp || 0;
+        const tB = typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp || 0;
+        return tB - tA;
+      });
     }
     return arr;
   }, [items, followingOnly, area, sortBy, following]);

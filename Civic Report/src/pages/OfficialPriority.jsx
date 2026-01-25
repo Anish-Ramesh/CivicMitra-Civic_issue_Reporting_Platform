@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Grid, Card, CardContent, CardActions, Button, Chip } from '@mui/material';
 import ComplaintDetailModal from '../components/ComplaintDetailModal';
-import { fetchComplaints } from '../utils/FirebaseFunctions.jsx';
+import { fetchComplaints } from '../utils/FirebaseServices.jsx';
 import { db } from '../utils/Firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../utils/Firebase";
-import { isOfficial } from "../utils/FirebaseFunctions.jsx";
+import { isOfficial } from "../utils/FirebaseServices.jsx";
 import { motion } from "framer-motion";
 
 // Assets

@@ -4,9 +4,10 @@ const userTypes = Object.freeze({
 });
 
 const Statuses = Object.freeze({
-  inProgress: "In-Progress",
-  solved: "SOLVED",
-  rejected: "REJECTED",
+  pending: "pending",
+  inProgress: "inProgress",
+  solved: "solved",
+  rejected: "rejected",
 });
 const statusColors = Object.freeze({
   inProgress: "#DFC900",

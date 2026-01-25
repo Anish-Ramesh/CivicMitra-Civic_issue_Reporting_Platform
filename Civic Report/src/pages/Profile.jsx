@@ -9,7 +9,7 @@ import {
   unfollowUser,
   getFollowingFor,
   calculateContributionScore,
-} from "../utils/FirebaseFunctions.jsx";
+} from "../utils/FirebaseServices.jsx";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../utils/Firebase";
 import { toast } from "react-toastify";
@@ -17,7 +17,7 @@ import { toast } from "react-toastify";
 // Helper to upload avatar using Cloudinary
 async function uploadAvatar(file) {
   try {
-    const { uploadToCloudinary } = await import('../utils/FirebaseFunctions');
+    const { uploadToCloudinary } = await import('../utils/FirebaseServices');
     const url = await uploadToCloudinary(file, 'avatars', 'image');
     return url;
   } catch (error) {

@@ -1,4 +1,4 @@
-import { fetchComplaints } from './FirebaseFunctions';
+import { fetchAllComplaintsForAnalytics } from './FirebaseServices';
 import { Statuses } from './enums';
 
 /**
@@ -7,7 +7,8 @@ import { Statuses } from './enums';
  */
 export const getAnalyticsData = async () => {
   try {
-    const complaints = await fetchComplaints();
+    const result = await fetchAllComplaintsForAnalytics();
+    const complaints = Array.isArray(result) ? result : [];
     
     // Process status distribution
     const statusCount = complaints.reduce((acc, complaint) => {

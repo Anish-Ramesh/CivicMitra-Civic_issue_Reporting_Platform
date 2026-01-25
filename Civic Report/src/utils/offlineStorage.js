@@ -2,7 +2,7 @@
 import { db } from './Firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'react-toastify';
-import { createComplaint } from './FirebaseFunctions';
+import { createComplaint } from './FirebaseServices';
 
 const DB_NAME = 'civicReportDB';
 const STORE_NAME = 'pendingComplaints';

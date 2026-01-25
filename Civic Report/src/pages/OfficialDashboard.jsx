@@ -4,7 +4,7 @@ import clsx from "clsx";
 import React, { useEffect, useState, useCallback, lazy, Suspense, useMemo } from "react";
 import ComplaintDetailModal from "../components/ComplaintDetailModal";
 import SpinnerModal from "../components/SpinnerModal";
-import { fetchComplaints, subscribeToComplaints } from "../utils/FirebaseFunctions.jsx";
+import { fetchComplaints, subscribeToComplaints } from "../utils/FirebaseServices.jsx";
 import { db } from "../utils/Firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { Statuses, statusColors } from "../utils/enums";

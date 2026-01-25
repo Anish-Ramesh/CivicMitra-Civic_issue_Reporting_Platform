@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { auth } from "../utils/Firebase";
-import { fetchComplaints } from "../utils/FirebaseFunctions.jsx";
+import { fetchComplaints } from "../utils/FirebaseServices.jsx";
 import { Statuses, statusColors } from "../utils/enums";
 import ComplaintDetailModal from "../components/ComplaintDetailModal";
 import SpinnerModal from "../components/SpinnerModal";

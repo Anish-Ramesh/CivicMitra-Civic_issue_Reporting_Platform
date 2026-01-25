@@ -4,7 +4,7 @@ import { auth, db } from '../../utils/Firebase';
 
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { isOfficial, checkAadharExists } from '../../utils/FirebaseFunctions';
+import { isOfficial, checkAadharExists } from '../../utils/FirebaseServices';
 import { verhoeffCheck } from '../../lib/aadharValidation';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

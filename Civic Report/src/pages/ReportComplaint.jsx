@@ -15,7 +15,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 
 // Utils
 import { auth } from '../utils/Firebase';
-import { createComplaint, isOfficial } from '../utils/FirebaseFunctions';
+import { createComplaint, isOfficial } from '../utils/FirebaseServices';
 import { Statuses } from '../utils/enums';
 import { saveOfflineComplaint, checkOnlineStatus, getPendingComplaints } from '../utils/offlineStorage';
 import { useMediaCapture } from '../contexts/MediaCaptureContext.jsx';
@@ -934,6 +934,7 @@ const ReportComplaint = () => {
         timestamp: new Date().toISOString(),
         reportedBy: auth.currentUser.uid,
       };
+
       
       // Helper: timeout for network requests (mobile might report online but be unreachable)
       const withTimeout = (promise, ms = 8000) => {

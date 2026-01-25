@@ -13,7 +13,7 @@ import { Textarea } from '../components/ui/textarea';
 
 // Utils
 import { auth } from '../utils/Firebase';
-import { createComplaint, isOfficial } from '../utils/FirebaseFunctions';
+import { createComplaint, isOfficial } from '../utils/FirebaseServices';
 import { Statuses } from '../utils/enums';
 
 const ReportComplaint = () => {

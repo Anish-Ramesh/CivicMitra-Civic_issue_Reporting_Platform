@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog } from '@mui/material';
 import { Statuses, statusColors } from '../utils/enums';
 import ComplaintDetailModal from './ComplaintDetailModal';
 import { ShieldCheck, ExternalLink } from 'lucide-react';
@@ -140,17 +139,11 @@ const ComplaintsCard = ({ complaint }) => {
         </motion.div>
       </AnimatePresence>
 
-      <Dialog
+      <ComplaintDetailModal
         open={isDialogOpen}
         onClose={() => setDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <ComplaintDetailModal
-          setDialogOpen={setDialogOpen}
-          complaint={complaint}
-        />
-      </Dialog>
+        complaint={complaint}
+      />
     </>
   );
 };

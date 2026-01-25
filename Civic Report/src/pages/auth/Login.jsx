@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 // Use unified Firebase utils to ensure consistent auth instance
 import { auth } from '../../utils/Firebase';
-import { isOfficial } from '../../utils/FirebaseFunctions';
+import { isOfficial } from '../../utils/FirebaseServices';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

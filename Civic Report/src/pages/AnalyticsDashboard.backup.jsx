@@ -30,7 +30,7 @@ import {
 } from 'recharts';
 import { format, subDays, startOfDay, endOfDay, isAfter, isBefore } from 'date-fns';
 import { Statuses, statusColors } from '../utils/enums';
-import { fetchComplaints, subscribeToComplaints } from '../utils/FirebaseFunctions';
+import { fetchComplaints, subscribeToComplaints } from '../utils/FirebaseServices';
 import { saveAs } from 'file-saver';
 import ExcelJS from 'exceljs';
 import RefreshIcon from '@mui/icons-material/Refresh';

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../utils/Firebase";
-import { fetchComplaintsByUser } from "../utils/FirebaseFunctions.jsx";
+import { fetchComplaintsByUser } from "../utils/FirebaseServices.jsx";
 import ComplaintsCard from "./ComplaintsCard";
 
 const statusWeight = {

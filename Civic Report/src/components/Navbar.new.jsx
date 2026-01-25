@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../utils/Firebase';
-import { isOfficial } from '../utils/FirebaseFunctions';
+import { isOfficial } from '../utils/FirebaseServices';
 
 // Icons
 const MenuIcon = () => (

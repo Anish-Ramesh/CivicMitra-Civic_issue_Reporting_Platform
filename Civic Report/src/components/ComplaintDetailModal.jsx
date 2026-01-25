@@ -5,7 +5,7 @@ import { Textarea } from './ui/textarea';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { auth, db } from '../utils/Firebase';
-import { addComment, isOfficial as checkIfOfficial } from '../utils/FirebaseFunctions';
+import { addComment, isOfficial as checkIfOfficial } from '../utils/FirebaseServices';
 import { doc, updateDoc } from 'firebase/firestore';
 import { statusColors } from '../utils/enums';
 import { toast } from 'react-toastify';
@@ -226,28 +226,64 @@ const ComplaintDetailModal = ({ open, onClose, complaint, onStatusUpdate }) => {
               </div>
             )}
             
-            {/* Complaint Image */}
-            {complaint.mediaUrl && (
-              <div>
-                <h4 className="text-sm font-medium text-neutral-500 mb-2">Attached Image</h4>
-                <div 
-                  className="relative group cursor-pointer rounded-lg overflow-hidden border border-neutral-200 w-full max-w-md"
-                  onClick={() => setIsImageOpen(true)}
-                >
-                  <img 
-                    src={complaint.mediaUrl} 
-                    alt="Complaint evidence" 
-                    className="w-full h-auto object-cover transition-transform duration-200 group-hover:scale-105"
+            {/* Video Content */}
+            {complaint.videoPath && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-neutral-500 mb-2">Video Evidence</h4>
+                <div className="bg-black rounded-lg overflow-hidden w-full max-w-md">
+                  <video 
+                    src={complaint.videoPath} 
+                    controls 
+                    className="w-full max-h-[300px]"
+                    preload="metadata"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-                    <div className="bg-white bg-opacity-80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Maximize2 className="w-4 h-4 text-neutral-700" />
-                    </div>
-                  </div>
                 </div>
-                <p className="mt-1 text-xs text-neutral-500">Click to view full size</p>
               </div>
             )}
+
+            {/* Photos */}
+            {(() => {
+              // Collect all images (new array format OR legacy single string)
+              let images = [];
+              if (Array.isArray(complaint.mediaPaths) && complaint.mediaPaths.length > 0) {
+                images = complaint.mediaPaths;
+              } else if (complaint.mediaUrl || complaint.mediaPath) {
+                // Filter out if it's actually a video url stored in mediaPath
+                const url = complaint.mediaUrl || complaint.mediaPath;
+                if (!url.match(/\.(mp4|webm|mov)$/i)) {
+                   images = [url];
+                }
+              }
+
+              if (images.length === 0) return null;
+
+              return (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-neutral-500 mb-2">Attached Images</h4>
+                  <div className={`grid gap-2 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {images.map((url, idx) => (
+                      <div 
+                        key={idx}
+                        className="relative group cursor-pointer rounded-lg overflow-hidden border border-neutral-200"
+                        onClick={() => {
+                          // Simple full screen view (browser native)
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <img 
+                          src={url} 
+                          alt={`Evidence ${idx + 1}`} 
+                          className="w-full h-48 object-cover transition-transform duration-200 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
+                          <Maximize2 className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 drop-shadow-md" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           
           {/* Comments Section */}
